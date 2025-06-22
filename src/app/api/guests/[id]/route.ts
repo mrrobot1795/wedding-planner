@@ -3,11 +3,11 @@ import connectDB from '@/lib/db';
 import Guest from '@/models/Guest';
 
 export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: { id: string } },
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     await connectDB();
 
@@ -31,12 +31,12 @@ export async function GET(
 }
 
 export async function PUT(
-  req: NextRequest,
-  context: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: { id: string } },
 ) {
   try {
-    const { id } = context.params;
-    const body = await req.json();
+    const { id } = params;
+    const body = await request.json();
 
     // Ensure additionalGuests is properly converted to a number
     if (body.additionalGuests !== undefined) {
@@ -71,11 +71,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: { id: string } },
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     await connectDB();
 
