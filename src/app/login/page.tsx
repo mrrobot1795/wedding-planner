@@ -15,15 +15,8 @@ function LoginContent() {
     // Handle authentication errors from the URL
     if (errorType === 'OAuthAccountNotLinked') {
       return 'The email is already associated with another account. Please sign in with the original provider.';
-    } else if (errorType === 'AccessDenied') {
-      return 'Access denied. You might not be on the allowed test users list.';
-    } else if (errorType === 'Configuration') {
-      return 'There is a problem with the server configuration. Please contact support.';
-    } else if (errorType === 'Callback') {
-      return 'There was an error during the authentication callback. This could be due to a redirect URI mismatch.';
     } else if (errorType) {
-      console.log('Authentication error type:', errorType);
-      return `Authentication error: ${errorType}. Please try again or contact support.`;
+      return 'An error occurred during authentication. Please try again.';
     }
     return '';
   });

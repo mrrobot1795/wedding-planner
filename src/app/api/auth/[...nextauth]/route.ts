@@ -23,9 +23,18 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
     }),
   ],
-  adapter: MongoDBAdapter(clientPromise) as Adapter,
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: 'wedding-planner', // Make sure this matches your MongoDB database name
+  }) as Adapter,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -41,14 +50,7 @@ const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async signIn({ account, profile }) {
-      // Add detailed logging to help troubleshoot authentication issues
-      console.log('SignIn callback executed');
-      console.log('Account provider:', account?.provider);
-      console.log('Profile email:', profile?.email);
-      
-      // Allow sign in with any OAuth account
-      // This prevents the "OAuthAccountNotLinked" error
+    async signIn() {
       return true;
     },
   },
