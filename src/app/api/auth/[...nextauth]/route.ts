@@ -41,7 +41,12 @@ const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async signIn() {
+    async signIn({ account, profile }) {
+      // Add detailed logging to help troubleshoot authentication issues
+      console.log('SignIn callback executed');
+      console.log('Account provider:', account?.provider);
+      console.log('Profile email:', profile?.email);
+      
       // Allow sign in with any OAuth account
       // This prevents the "OAuthAccountNotLinked" error
       return true;
