@@ -4,10 +4,10 @@ import ChecklistItem from '@/models/ChecklistItem';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     await connectDB();
 
@@ -35,10 +35,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const body = await req.json();
 
     await connectDB();
@@ -70,10 +70,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     await connectDB();
 
