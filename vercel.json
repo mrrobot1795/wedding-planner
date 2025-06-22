@@ -33,10 +33,12 @@
       ]
     }
   ],
-  "crons": {
-    "version": 1,
-    "timezone": "America/New_York"
-  },
+  "crons": [
+    {
+      "path": "/api/cron/daily",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "github": {
     "silent": true
   }

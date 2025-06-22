@@ -29,6 +29,9 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  // Detect the URL for auth callbacks automatically
+  // This ensures it works in both local development and on Vercel
+  useSecureCookies: process.env.NODE_ENV === 'production',
   callbacks: {
     async session({ session, token }) {
       // Add user id to the session
