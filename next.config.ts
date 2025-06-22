@@ -9,6 +9,20 @@ const nextConfig: NextConfig = {
       'avatars.githubusercontent.com', // GitHub avatars if you add GitHub auth later
     ],
   },
+
+  // Optimized build settings for Vercel
+  output: 'standalone', // Creates a standalone build that's more portable and starts faster
+
+  // Performance optimizations
+  swcMinify: true, // Use SWC for minification (faster than Terser)
+
+  // Static optimization where possible
+  staticPageGenerationTimeout: 120, // Increase timeout for static page generation (in seconds)
+
+  // Add build-time environment variable for detecting Vercel
+  env: {
+    IS_VERCEL_DEPLOYMENT: process.env.VERCEL === '1' ? 'true' : 'false',
+  },
 };
 
 export default nextConfig;
