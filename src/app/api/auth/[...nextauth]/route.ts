@@ -16,7 +16,8 @@ declare module 'next-auth' {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+// Define the auth options but don't export them directly
+const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   providers: [
     GoogleProvider({
@@ -53,5 +54,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// Create the handler with the authOptions and export it directly as GET and POST
+// This follows the correct pattern for Next.js App Router API routes
+export const GET = NextAuth(authOptions);
+export const POST = NextAuth(authOptions);
