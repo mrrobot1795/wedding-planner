@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+// Create a client component that safely uses useSearchParams
+function LoginContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') ?? '/';
-  const errorType = searchParams.get('error');
+  const callbackUrl = searchParams?.get('callbackUrl') ?? '/';
+  const errorType = searchParams?.get('error');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(() => {
     // Handle authentication errors from the URL
@@ -20,26 +21,29 @@ export default function LoginPage() {
     return '';
   });
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     try {
       setIsLoading(true);
       setError('');
-      // Start the Google OAuth sign-in process
-      const result = await signIn('google', {
+
+      // Start the Google OAuth sign-in process with redirect
+      // When redirect is true, we shouldn't try to handle the result as this code won't execute
+      // after the redirect happens
+      signIn('google', {
         callbackUrl,
         redirect: true,
       });
-      // This won't be reached if redirect is true
-      if (!result?.ok) {
-        setError('Failed to sign in with Google');
-      }
+
+      // The code below won't be executed due to the redirect
+      // No need for error handling here as the page will be redirected to Google
     } catch (error) {
-      setError('An error occurred while signing in');
-      console.error('Sign in error:', error);
-    } finally {
+      // This will only run if there's an exception before the redirect happens
       setIsLoading(false);
+      setError('Failed to start authentication process');
+      console.error('Sign in initialization error:', error);
     }
   };
+
   return (
     <Layout requireAuth={false}>
       <div className="min-h-[70vh] flex items-center justify-center">
@@ -94,14 +98,24 @@ export default function LoginPage() {
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path
-                      d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M0 11.449h4.826V6.085H0v5.364zm23.862-9.303v5.364h-3.359v-5.364h-5.364V.787h5.364V.787h3.359v1.359z"
-                      fill="#34A853"
-                    />
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                      <path
+                        d="M23.745 12.27c0-.79-.07-1.54-.19-2.27h-11.3v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12.255 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09c1.97 3.92 6.02 6.62 10.71 6.62z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.525 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29v-3.09h-3.98c-.8 1.6-1.26 3.41-1.26 5.38s.46 3.78 1.26 5.38l3.98-3.09z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42c-2.08-1.94-4.8-3.13-8.02-3.13-4.69 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+                        fill="#EA4335"
+                      />
+                    </g>
                   </svg>
                   Continue with Google
                 </>
@@ -118,5 +132,26 @@ export default function LoginPage() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+// Export the main LoginPage component with Suspense
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <Layout requireAuth={false}>
+          <div className="min-h-[70vh] flex items-center justify-center">
+            <div className="bg-gradient-to-b from-teal-900 to-teal-700 p-8 rounded-xl shadow-lg max-w-md w-full border border-teal-600">
+              <div className="text-center">
+                <p className="text-teal-200">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </Layout>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

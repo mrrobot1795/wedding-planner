@@ -65,7 +65,6 @@ const Sidebar = () => {
                 <p className="font-medium text-sm text-teal-300">
                   {session.user?.name}
                 </p>
-                <p className="text-xs text-gray-400">{session.user?.email}</p>
               </div>
             </div>
             <button

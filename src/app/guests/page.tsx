@@ -270,7 +270,7 @@ const GuestsPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-teal-200">
                           {guest.group || 'Guest'}
-                        </td>{' '}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-teal-200">
                           {guest.additionalGuests !== undefined
                             ? Number(guest.additionalGuests)

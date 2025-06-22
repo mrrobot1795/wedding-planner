@@ -62,6 +62,33 @@ A comprehensive wedding planning application built with Next.js, TypeScript, Tai
    ```
 6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+## Production Build and Deployment
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+### Running in Production Mode
+
+This project uses Next.js `output: 'standalone'` configuration for optimized production deployment.
+
+You have two options to run the production build:
+
+1. **Using our helper script (recommended):**
+
+   ```bash
+   npm run start:standalone
+   ```
+
+2. **Using the standalone server directly:**
+   ```bash
+   node .next/standalone/server.js
+   ```
+
+> **Note:** The regular `npm start` command doesn't work with `output: standalone` configuration.
+
 ## Project Structure
 
 To learn more about Next.js, take a look at the following resources:

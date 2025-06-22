@@ -28,12 +28,9 @@ export async function POST(req: NextRequest) {
       body.additionalGuests = Number(body.additionalGuests);
     }
 
-    console.log('Creating guest with body:', body);
-
     await connectDB();
 
     const guest = await Guest.create(body);
-    console.log('Created guest:', guest);
 
     return NextResponse.json({ success: true, data: guest }, { status: 201 });
   } catch (error) {

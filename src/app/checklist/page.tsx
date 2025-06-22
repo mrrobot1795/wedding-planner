@@ -53,19 +53,13 @@ const ChecklistPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <ChecklistTaskModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          task={currentTask}
-          onSubmit={handleTaskSubmit}
-        />
         <div className="flex justify-between items-center p-5 bg-gradient-to-b from-teal-900 to-teal-700 rounded-xl shadow-sm mb-6 border border-teal-600">
           <div>
             <h1 className="text-3xl font-bold text-white">Wedding Checklist</h1>
             <p className="text-teal-100 mt-1">
               Keep track of your wedding planning tasks
             </p>
-          </div>{' '}
+          </div>
           <button
             className="bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-600 hover:to-teal-500 text-white px-4 py-2 rounded-md shadow-md transition-all hover:shadow-lg transform hover:scale-105 border border-teal-300"
             onClick={() => {
@@ -91,7 +85,6 @@ const ChecklistPage = () => {
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {' '}
           <div className="bg-gradient-to-b from-teal-900 to-teal-700 p-5 rounded-lg shadow-md border border-teal-600 hover:shadow-lg transition-shadow hover:from-teal-800 hover:to-teal-600">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
               <div className="bg-teal-700 p-2 rounded-full mr-3">
@@ -152,7 +145,6 @@ const ChecklistPage = () => {
                 } else {
                   return (
                     <div className="space-y-3">
-                      {' '}
                       {tasks
                         .filter((task) => !task.completed)
                         .map((task, index) => {
@@ -200,7 +192,7 @@ const ChecklistPage = () => {
                                           clipRule="evenodd"
                                         />
                                       </svg>
-                                      Due:{' '}
+                                      Due:
                                       {new Date(
                                         task.dueDate,
                                       ).toLocaleDateString()}
@@ -217,9 +209,8 @@ const ChecklistPage = () => {
                                     </button>
                                     {priorityBadge}
                                   </div>
-                                </div>{' '}
+                                </div>
                                 <div className="flex space-x-2">
-                                  {' '}
                                   <button
                                     className="bg-teal-600 hover:bg-teal-500 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
                                     aria-label="Mark as complete"
@@ -244,7 +235,7 @@ const ChecklistPage = () => {
                                         clipRule="evenodd"
                                       />
                                     </svg>
-                                  </button>{' '}
+                                  </button>
                                   <button
                                     className="bg-teal-700 hover:bg-teal-600 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
                                     aria-label="Edit task"
@@ -299,7 +290,7 @@ const ChecklistPage = () => {
                 }
               })()}
             </div>
-          </div>{' '}
+          </div>
           <div className="bg-gradient-to-b from-teal-900 to-teal-700 p-5 rounded-lg shadow-md border border-teal-600 hover:shadow-lg transition-shadow hover:from-teal-800 hover:to-teal-600">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
               <div className="bg-teal-700 p-2 rounded-full mr-3">
@@ -377,17 +368,16 @@ const ChecklistPage = () => {
                             key={task._id?.toString() ?? `upcoming-${index}`}
                             className="p-4 bg-gradient-to-b from-teal-900 to-teal-700 rounded-lg border border-teal-600 hover:border-teal-400 transition-all duration-300"
                           >
-                            {' '}
                             <div className="flex justify-between items-start">
                               <div>
                                 <h3 className="font-medium text-teal-50">
                                   {task.title}
                                 </h3>
                                 <p className="text-xs text-teal-200">
-                                  Due:{' '}
+                                  Due:
                                   {new Date(task.dueDate).toLocaleDateString()}
                                 </p>
-                              </div>{' '}
+                              </div>
                               <span
                                 className={`px-2 py-0.5 text-xs rounded-full ${(() => {
                                   if (task.priority === 'high') {
@@ -461,7 +451,6 @@ const ChecklistPage = () => {
           </div>
           <div className="bg-gradient-to-b from-teal-900 to-teal-700 p-5 rounded-lg shadow-md border border-teal-600 hover:shadow-lg transition-shadow hover:from-teal-800 hover:to-teal-600">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
-              {' '}
               <div className="bg-teal-700 p-2 rounded-full mr-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -526,12 +515,11 @@ const ChecklistPage = () => {
                             key={task._id?.toString() ?? `completed-${index}`}
                             className="p-4 bg-gray-50 rounded-lg border border-gray-200 opacity-80"
                           >
-                            {' '}
                             <div className="flex justify-between items-start">
                               <div className="line-through text-gray-500">
                                 <h3 className="font-medium">{task.title}</h3>
                                 <p className="text-xs">
-                                  Completed on{' '}
+                                  Completed on
                                   {new Date(
                                     task.updatedAt,
                                   ).toLocaleDateString()}
@@ -594,6 +582,12 @@ const ChecklistPage = () => {
             </div>
           </div>
         </div>
+        <ChecklistTaskModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          task={currentTask}
+          onSubmit={handleTaskSubmit}
+        />
       </div>
     </Layout>
   );

@@ -11,6 +11,11 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  {
+    ignores: [
+      'src/lib/db.ts', // Ignore TypeScript declarations for global variables
+    ],
+  },
 ];
 
 export default eslintConfig;

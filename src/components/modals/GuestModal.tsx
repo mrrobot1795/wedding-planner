@@ -136,7 +136,6 @@ const GuestForm: React.FC<GuestFormProps> = ({ guest, onSubmit, onCancel }) => {
         />
       </div>
       <div className="mb-4">
-        {' '}
         <FormInput
           id="additionalGuests"
           label="Additional Guests"

@@ -99,7 +99,7 @@ const VendorsPage = () => {
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
             />
           </svg>
-          <p className="text-teal-50 mb-4">No vendors added yet.</p>{' '}
+          <p className="text-teal-50 mb-4">No vendors added yet.</p>
           <button
             className="bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-600 hover:to-teal-500 text-white px-5 py-2 rounded-md shadow-md transition-all transform hover:scale-105 border border-teal-300"
             onClick={() => {
@@ -134,7 +134,6 @@ const VendorsPage = () => {
             key={vendor._id?.toString() ?? `vendor-${index}`}
             className="bg-gradient-to-b from-teal-900 to-teal-700 p-6 rounded-lg shadow-md border border-teal-600 hover:shadow-xl transition-all duration-300 hover:border-teal-300 transform hover:-translate-y-1 hover:from-teal-800 hover:to-teal-600"
           >
-            {' '}
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">
@@ -176,7 +175,6 @@ const VendorsPage = () => {
             </div>
             <div className="flex flex-col space-y-2 mb-4">
               <div className="flex items-center">
-                {' '}
                 <span className="w-24 text-sm text-teal-200 flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -197,7 +195,6 @@ const VendorsPage = () => {
                 </span>
               </div>
               <div className="flex items-center">
-                {' '}
                 <span className="w-24 text-sm text-teal-200 flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +212,6 @@ const VendorsPage = () => {
                 </span>
               </div>
               <div className="flex items-center">
-                {' '}
                 <span className="w-24 text-sm text-teal-200 flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -229,7 +225,7 @@ const VendorsPage = () => {
                 </span>
                 <span className="text-white">{vendor.phone || 'N/A'}</span>
               </div>
-            </div>{' '}
+            </div>
             <div className="pt-4 border-t border-teal-600 flex space-x-2">
               <button
                 className="bg-teal-700 hover:bg-teal-600 text-white px-3 py-2 rounded-md text-sm transition-colors flex-1 flex items-center justify-center border border-teal-500"
@@ -274,7 +270,7 @@ const VendorsPage = () => {
                 </svg>
                 Delete
               </button>
-            </div>{' '}
+            </div>
           </div>
         ))}
       </div>
@@ -284,14 +280,8 @@ const VendorsPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <VendorModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          vendor={currentVendor}
-          onSubmit={handleVendorSubmit}
-        />
         <div className="flex justify-between items-center p-5 bg-gradient-to-b from-teal-900 to-teal-700 rounded-xl shadow-sm mb-6 border border-teal-600">
-          <h1 className="text-3xl font-bold text-white">Vendor Management</h1>{' '}
+          <h1 className="text-3xl font-bold text-white">Vendor Management</h1>
           <button
             className="bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-600 hover:to-teal-500 text-white px-4 py-2 rounded-md shadow-md transition-all transform hover:scale-105 border border-teal-300"
             onClick={() => {
@@ -317,6 +307,12 @@ const VendorsPage = () => {
           </button>
         </div>
         {content}
+        <VendorModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          vendor={currentVendor}
+          onSubmit={handleVendorSubmit}
+        />
       </div>
     </Layout>
   );

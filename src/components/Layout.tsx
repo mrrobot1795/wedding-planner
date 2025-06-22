@@ -77,7 +77,7 @@ const Sidebar = () => {
             </svg>
           )}
         </button>
-      </div>{' '}
+      </div>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <button
@@ -233,9 +233,6 @@ const Sidebar = () => {
                   <div>
                     <p className="font-medium text-sm text-teal-200">
                       {session.user?.name}
-                    </p>
-                    <p className="text-xs text-teal-400">
-                      {session.user?.email}
                     </p>
                   </div>
                 </div>

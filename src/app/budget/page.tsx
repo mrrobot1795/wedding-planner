@@ -157,12 +157,6 @@ const BudgetPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <BudgetItemModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          budgetItem={currentBudgetItem}
-          onSubmit={handleBudgetItemSubmit}
-        />
         <div className="flex justify-between items-center p-4 bg-gradient-to-b from-teal-900 to-teal-700 rounded-lg shadow-sm mb-6 border border-teal-600">
           <h1 className="text-3xl font-bold text-white">Budget Tracking</h1>
           <button
@@ -214,6 +208,13 @@ const BudgetPage = () => {
           </div>
         </div>
         {content}
+
+        <BudgetItemModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          budgetItem={currentBudgetItem}
+          onSubmit={handleBudgetItemSubmit}
+        />
       </div>
     </Layout>
   );
