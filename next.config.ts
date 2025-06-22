@@ -13,9 +13,6 @@ const nextConfig: NextConfig = {
   // Optimized build settings for Vercel
   output: 'standalone', // Creates a standalone build that's more portable and starts faster
 
-  // Performance optimizations
-  swcMinify: true, // Use SWC for minification (faster than Terser)
-
   // Static optimization where possible
   staticPageGenerationTimeout: 120, // Increase timeout for static page generation (in seconds)
 
