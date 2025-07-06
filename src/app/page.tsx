@@ -270,7 +270,11 @@ export default function Dashboard() {
               <div className="bg-teal-800/30 p-3 rounded-md border border-teal-600">
                 <h3 className="text-white font-medium">Budget Updated</h3>
                 <p className="text-teal-200 text-sm mt-1">
-                  Budget items tracked: ${totalSpent.toLocaleString()}
+                  Budget items tracked:
+                  {totalSpent.toLocaleString('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                  })}
                 </p>
               </div>
 
