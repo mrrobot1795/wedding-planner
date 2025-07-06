@@ -33,7 +33,15 @@ const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async session({ session, token }: { session: { user?: { id?: string; name?: string | null; email?: string | null } }; token: { sub?: string } }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: {
+        user?: { id?: string; name?: string | null; email?: string | null };
+      };
+      token: { sub?: string };
+    }) {
       if (token && session.user) {
         session.user.id = token.sub;
       }
@@ -54,14 +62,16 @@ const authOptions = {
 async function getUserFromSession() {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
       return null;
     }
 
     // Convert user ID to ObjectId for MongoDB
-    const userId = session.user.id ? new mongoose.Types.ObjectId(session.user.id) : new mongoose.Types.ObjectId();
-    
+    const userId = session.user.id
+      ? new mongoose.Types.ObjectId(session.user.id)
+      : new mongoose.Types.ObjectId();
+
     return {
       id: userId,
       email: session.user.email ?? 'unknown@example.com',
