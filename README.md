@@ -23,6 +23,7 @@ A comprehensive wedding planning application built with Next.js, TypeScript, Tai
 - **Budget Tracking**: Monitor estimated and actual costs
 - **Vendor Management**: Keep track of all wedding vendors and contacts
 - **Wedding Checklist**: Tasks and to-dos for wedding planning
+- **Email Notifications**: Automatic email notifications for task assignments and completions
 
 ## Features
 
@@ -31,6 +32,10 @@ A comprehensive wedding planning application built with Next.js, TypeScript, Tai
 - **Budget Tracking**: Monitor estimated and actual costs
 - **Vendor Management**: Keep track of all wedding vendors and contacts
 - **Wedding Checklist**: Tasks and to-dos for wedding planning
+- **Email Notifications**:
+  - Automatic email notifications when tasks are assigned to team members
+  - Completion notifications when tasks are marked as done
+  - Email status tracking (sent/pending) in the UI
 
 ## Tech Stack
 
@@ -47,13 +52,24 @@ A comprehensive wedding planning application built with Next.js, TypeScript, Tai
    npm install
    ```
 3. Set up your environment variables in `.env.local` (see `.env.local.example` for template):
+
    ```
    MONGODB_URI=your_mongodb_connection_string
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    NEXTAUTH_SECRET=your_nextauth_secret
    NEXTAUTH_URL=http://localhost:3000
+
+   # Email service configuration for task notifications
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_SECURE=false
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   EMAIL_FROM=your-email@gmail.com
+   EMAIL_FROM_NAME=Wedding Planner App
    ```
+
 4. Set up Google OAuth credentials (see `AUTH_SETUP.md` for detailed instructions)
 
 5. Run the development server:
@@ -61,6 +77,26 @@ A comprehensive wedding planning application built with Next.js, TypeScript, Tai
    npm run dev
    ```
 6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Email Notification Setup
+
+The wedding planner now includes automatic email notifications for task assignments and completions. To set up email notifications:
+
+1. **Configure your email service** in `.env.local`:
+
+   - For Gmail: Enable 2FA and create an App Password
+   - For other services: Use your SMTP settings
+
+2. **Test the email functionality**:
+
+   - Visit `/test-email` to send a test notification
+   - Create a task with an assigned email to test assignment notifications
+
+3. **Email features include**:
+   - Task assignment notifications with due dates and details
+   - Task completion notifications to the assigner
+   - Email status tracking in the checklist UI
+   - Automatic retry logic for failed emails
 
 ## Production Build and Deployment
 

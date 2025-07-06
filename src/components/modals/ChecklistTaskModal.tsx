@@ -19,6 +19,7 @@ const ChecklistTaskForm: React.FC<ChecklistTaskFormProps> = ({
 
   interface FormDataState extends Omit<Partial<IChecklist>, 'dueDate'> {
     dueDate?: string;
+    assignedToEmail?: string;
   }
 
   const [formData, setFormData] = useState<FormDataState>({
@@ -31,6 +32,9 @@ const ChecklistTaskForm: React.FC<ChecklistTaskFormProps> = ({
     category: task?.category ?? 'Venue',
     priority: task?.priority ?? 'medium',
     assignedTo: task?.assignedTo ?? '',
+    assignedToEmail:
+      (task as ChecklistItemWithId & { assignedToEmail?: string })
+        ?.assignedToEmail ?? '',
     notes: task?.notes ?? '',
   });
 
@@ -140,6 +144,15 @@ const ChecklistTaskForm: React.FC<ChecklistTaskFormProps> = ({
           onChange={handleChange}
         />
       </div>
+
+      <FormInput
+        id="assignedToEmail"
+        label="Assignee Email (for notifications)"
+        type="email"
+        value={formData.assignedToEmail ?? ''}
+        onChange={handleChange}
+        placeholder="Enter email to send task assignment notifications"
+      />
 
       <div className="flex items-center mb-4">
         <input

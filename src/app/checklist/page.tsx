@@ -16,6 +16,12 @@ export interface ChecklistItemWithId {
   category: string;
   priority: 'low' | 'medium' | 'high';
   assignedTo: string;
+  assignedToEmail?: string;
+  assignedBy?: string;
+  assignedAt?: Date;
+  emailSent?: boolean;
+  emailSentAt?: Date;
+  completedAt?: Date;
   notes: string;
   createdAt: Date;
   updatedAt: Date;
@@ -173,44 +179,106 @@ const ChecklistPage = () => {
                               key={task._id?.toString() ?? `temp-${index}`}
                               className="p-4 bg-gradient-to-b from-teal-900 to-teal-700 rounded-lg border border-teal-600 hover:border-teal-400 hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 text-white"
                             >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h3 className="font-medium text-teal-50">
+                              <div className="flex justify-between items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-medium text-teal-50 truncate">
                                     {task.title}
                                   </h3>
-                                  <div className="flex items-center space-x-2 mt-1">
-                                    <p className="text-xs text-teal-200 flex items-center">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-3 w-3 mr-1"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
+                                  <div className="flex items-center justify-between mt-1 gap-2">
+                                    <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                      <p className="text-xs text-teal-200 flex items-center truncate">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-3 w-3 mr-1 flex-shrink-0"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                        <span className="truncate">
+                                          Due:
+                                          {new Date(
+                                            task.dueDate,
+                                          ).toLocaleDateString()}
+                                        </span>
+                                      </p>
+                                      <button
+                                        className="text-teal-300 hover:text-teal-100 text-xs flex-shrink-0"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCurrentTask(task);
+                                          setIsModalOpen(true);
+                                        }}
                                       >
-                                        <path
-                                          fillRule="evenodd"
-                                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                          clipRule="evenodd"
-                                        />
-                                      </svg>
-                                      Due:
-                                      {new Date(
-                                        task.dueDate,
-                                      ).toLocaleDateString()}
-                                    </p>
-                                    <button
-                                      className="text-teal-300 hover:text-teal-100 ml-2"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCurrentTask(task);
-                                        setIsModalOpen(true);
-                                      }}
-                                    >
-                                      Edit
-                                    </button>
-                                    {priorityBadge}
+                                        Edit
+                                      </button>
+                                    </div>
+                                    <div className="flex-shrink-0">
+                                      {priorityBadge}
+                                    </div>
                                   </div>
+                                  {/* Assignment and Email Status */}
+                                  {task.assignedTo && (
+                                    <div className="mt-2 space-y-1">
+                                      <div className="flex items-center text-xs text-teal-200 truncate">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-3 w-3 mr-1 flex-shrink-0"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                        <span className="truncate">
+                                          Assigned to: {task.assignedTo}
+                                        </span>
+                                      </div>
+                                      {task.assignedToEmail && (
+                                        <div className="flex items-center text-xs text-teal-200 space-x-1">
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-3 w-3 flex-shrink-0"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                          >
+                                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                          </svg>
+                                          <span className="truncate flex-1 min-w-0">
+                                            {task.assignedToEmail}
+                                          </span>
+                                          <div className="flex-shrink-0">
+                                            {(() => {
+                                              if (task.emailSent) {
+                                                return (
+                                                  <span className="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800 border border-green-200">
+                                                    ✓ Sent
+                                                  </span>
+                                                );
+                                              } else if (task.assignedToEmail) {
+                                                return (
+                                                  <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                    Pending
+                                                  </span>
+                                                );
+                                              }
+                                              return null;
+                                            })()}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="flex space-x-2">
+                                <div className="flex space-x-2 flex-shrink-0">
                                   <button
                                     className="bg-teal-600 hover:bg-teal-500 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
                                     aria-label="Mark as complete"
@@ -524,6 +592,40 @@ const ChecklistPage = () => {
                                     task.updatedAt,
                                   ).toLocaleDateString()}
                                 </p>
+                                {/* Assignment Info for Completed Tasks */}
+                                {task.assignedTo && (
+                                  <div className="mt-1 space-y-1">
+                                    <div className="flex items-center text-xs text-gray-400">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-3 w-3 mr-1"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                      Assigned to: {task.assignedTo}
+                                    </div>
+                                    {task.assignedToEmail && (
+                                      <div className="flex items-center text-xs text-gray-400">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-3 w-3 mr-1"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                        </svg>
+                                        Email: {task.assignedToEmail}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                               <div className="flex space-x-2">
                                 <button

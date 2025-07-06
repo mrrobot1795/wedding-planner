@@ -45,6 +45,7 @@ const Sidebar = () => {
           <NavLink href="/budget">Budget Tracking</NavLink>
           <NavLink href="/vendors">Vendor Management</NavLink>
           <NavLink href="/checklist">Checklist</NavLink>
+          <NavLink href="/test-email">Test Email</NavLink>
         </nav>
       </div>
 
