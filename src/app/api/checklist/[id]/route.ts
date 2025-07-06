@@ -3,14 +3,73 @@ import connectDB from '@/lib/db';
 import ChecklistItem from '@/models/ChecklistItem';
 import { emailService } from '@/lib/email-service';
 import mongoose from 'mongoose';
+import { getServerSession } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import { MongoDBAdapter } from '@auth/mongodb-adapter';
+import clientPromise from '@/lib/mongodb';
+import { Adapter } from 'next-auth/adapters';
 
-// Simplified auth check - in production you'd want proper session handling
+// Auth options configuration (matching the main NextAuth config)
+const authOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
+    }),
+  ],
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: 'wedding-planner',
+  }) as Adapter,
+  session: {
+    strategy: 'jwt' as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  callbacks: {
+    async session({ session, token }: { session: { user?: { id?: string; name?: string | null; email?: string | null } }; token: { sub?: string } }) {
+      if (token && session.user) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+    async signIn() {
+      return true;
+    },
+  },
+  pages: {
+    signIn: '/login',
+    error: '/login',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+// Get user from NextAuth session
 async function getUserFromSession() {
-  return {
-    id: new mongoose.Types.ObjectId('507f1f77bcf86cd799439011'),
-    email: 'user@example.com',
-    name: 'Test User',
-  };
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return null;
+    }
+
+    // Convert user ID to ObjectId for MongoDB
+    const userId = session.user.id ? new mongoose.Types.ObjectId(session.user.id) : new mongoose.Types.ObjectId();
+    
+    return {
+      id: userId,
+      email: session.user.email ?? 'unknown@example.com',
+      name: session.user.name ?? 'Unknown User',
+    };
+  } catch (error) {
+    console.error('Error getting user from session:', error);
+    return null;
+  }
 }
 
 export async function GET(
@@ -88,7 +147,7 @@ export async function PUT(
         body.assignedToEmail !== currentItem.assignedToEmail);
 
     if (isNewAssignment) {
-      body.assignedBy = user.name || user.email;
+      body.assignedBy = user.name ?? user.email;
       body.assignedAt = new Date();
       body.emailSent = false; // Reset email status for new assignment
     }
@@ -117,7 +176,7 @@ export async function PUT(
             dueDate: checklistItem.dueDate,
             priority: checklistItem.priority,
             category: checklistItem.category,
-            assignerName: user.name || user.email || 'Wedding Planner',
+            assignerName: user.name ?? user.email ?? 'Wedding Planner',
             taskUrl: `${process.env.NEXTAUTH_URL}/checklist`,
           },
         );
@@ -141,7 +200,7 @@ export async function PUT(
 
         await emailService.sendTaskCompletionEmail(assignerEmail, {
           taskTitle: checklistItem.title,
-          completedBy: user.name || user.email || 'Unknown',
+          completedBy: user.name ?? user.email ?? 'Unknown',
           completionDate: new Date(),
         });
       }
