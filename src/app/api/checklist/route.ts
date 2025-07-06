@@ -95,7 +95,13 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const checklistItems = await ChecklistItem.find({ userId: user.id });
+    // Find tasks that the user either created OR are assigned to them
+    const checklistItems = await ChecklistItem.find({
+      $or: [
+        { userId: user.id }, // Tasks created by the user
+        { assignedToEmail: user.email }, // Tasks assigned to the user
+      ],
+    });
 
     return NextResponse.json(
       { success: true, data: checklistItems },

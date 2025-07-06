@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import { useChecklist } from '@/lib/api';
 import { IChecklist } from '@/models/ChecklistItem';
 import { ChecklistTaskModal } from '@/components/modals';
+import { useSession } from 'next-auth/react';
 
 // Define a local interface that modifies IChecklist to have _id as optional
 export interface ChecklistItemWithId {
@@ -28,6 +29,7 @@ export interface ChecklistItemWithId {
 }
 
 const ChecklistPage = () => {
+  const { data: session } = useSession();
   const {
     tasks: rawTasks,
     isLoading,
@@ -41,6 +43,17 @@ const ChecklistPage = () => {
   const [currentTask, setCurrentTask] = useState<
     ChecklistItemWithId | undefined
   >(undefined);
+
+  // Helper function to determine if a task was assigned to the current user
+  const isAssignedToMe = (task: ChecklistItemWithId) => {
+    return task.assignedToEmail === session?.user?.email;
+  };
+
+  // Helper function to determine if a task was created by the current user
+  const isCreatedByMe = (task: ChecklistItemWithId) => {
+    return !isAssignedToMe(task); // If not assigned to me, it was created by me
+  };
+
   const handleTaskSubmit = async (taskData: Partial<IChecklist>) => {
     try {
       if (currentTask?._id) {
@@ -206,20 +219,42 @@ const ChecklistPage = () => {
                                           ).toLocaleDateString()}
                                         </span>
                                       </p>
-                                      <button
-                                        className="text-teal-300 hover:text-teal-100 text-xs flex-shrink-0"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setCurrentTask(task);
-                                          setIsModalOpen(true);
-                                        }}
-                                      >
-                                        Edit
-                                      </button>
+                                      {/* Only show Edit button for tasks created by the current user */}
+                                      {isCreatedByMe(task) && (
+                                        <button
+                                          className="text-teal-300 hover:text-teal-100 text-xs flex-shrink-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCurrentTask(task);
+                                            setIsModalOpen(true);
+                                          }}
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
                                     </div>
                                     <div className="flex-shrink-0">
                                       {priorityBadge}
                                     </div>
+                                  </div>
+                                  {/* Task Ownership Badge */}
+                                  <div className="mt-2">
+                                    {(() => {
+                                      if (isAssignedToMe(task)) {
+                                        return (
+                                          <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                            🎯 Assigned to Me
+                                          </span>
+                                        );
+                                      } else if (isCreatedByMe(task)) {
+                                        return (
+                                          <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                            ✨ Created by Me
+                                          </span>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
                                   </div>
                                   {/* Assignment and Email Status */}
                                   {task.assignedTo && (
@@ -279,6 +314,7 @@ const ChecklistPage = () => {
                                   )}
                                 </div>
                                 <div className="flex space-x-2 flex-shrink-0">
+                                  {/* Show complete button for both created and assigned tasks */}
                                   <button
                                     className="bg-teal-600 hover:bg-teal-500 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
                                     aria-label="Mark as complete"
@@ -304,50 +340,55 @@ const ChecklistPage = () => {
                                       />
                                     </svg>
                                   </button>
-                                  <button
-                                    className="bg-teal-700 hover:bg-teal-600 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
-                                    aria-label="Edit task"
-                                    onClick={() => {
-                                      setCurrentTask(task);
-                                      setIsModalOpen(true);
-                                    }}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
-                                    aria-label="Delete task"
-                                    onClick={() => {
-                                      if (
-                                        task._id &&
-                                        window.confirm(
-                                          'Are you sure you want to delete this task?',
-                                        )
-                                      ) {
-                                        deleteTask(task._id);
-                                      }
-                                    }}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      className="h-4 w-4"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </button>
+                                  {/* Show edit and delete buttons only for tasks created by the current user */}
+                                  {isCreatedByMe(task) && (
+                                    <>
+                                      <button
+                                        className="bg-teal-700 hover:bg-teal-600 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
+                                        aria-label="Edit task"
+                                        onClick={() => {
+                                          setCurrentTask(task);
+                                          setIsModalOpen(true);
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
+                                        aria-label="Delete task"
+                                        onClick={() => {
+                                          if (
+                                            task._id &&
+                                            window.confirm(
+                                              'Are you sure you want to delete this task?',
+                                            )
+                                          ) {
+                                            deleteTask(task._id);
+                                          }
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -592,6 +633,25 @@ const ChecklistPage = () => {
                                     task.updatedAt,
                                   ).toLocaleDateString()}
                                 </p>
+                                {/* Task Ownership Badge for Completed Tasks */}
+                                <div className="mt-1">
+                                  {(() => {
+                                    if (isAssignedToMe(task)) {
+                                      return (
+                                        <span className="px-2 py-0.5 text-xs rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                                          🎯 Assigned to Me
+                                        </span>
+                                      );
+                                    } else if (isCreatedByMe(task)) {
+                                      return (
+                                        <span className="px-2 py-0.5 text-xs rounded-full bg-purple-50 text-purple-600 border border-purple-200">
+                                          ✨ Created by Me
+                                        </span>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+                                </div>
                                 {/* Assignment Info for Completed Tasks */}
                                 {task.assignedTo && (
                                   <div className="mt-1 space-y-1">
@@ -628,50 +688,55 @@ const ChecklistPage = () => {
                                 )}
                               </div>
                               <div className="flex space-x-2">
-                                <button
-                                  className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
-                                  aria-label="Edit task"
-                                  onClick={() => {
-                                    setCurrentTask(task);
-                                    setIsModalOpen(true);
-                                  }}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
-                                  aria-label="Delete task"
-                                  onClick={() => {
-                                    if (
-                                      task._id &&
-                                      window.confirm(
-                                        'Are you sure you want to delete this task?',
-                                      )
-                                    ) {
-                                      deleteTask(task._id);
-                                    }
-                                  }}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </button>
+                                {/* Show action buttons only for tasks created by the current user */}
+                                {isCreatedByMe(task) && (
+                                  <>
+                                    <button
+                                      className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
+                                      aria-label="Edit task"
+                                      onClick={() => {
+                                        setCurrentTask(task);
+                                        setIsModalOpen(true);
+                                      }}
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                      >
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
+                                      aria-label="Delete task"
+                                      onClick={() => {
+                                        if (
+                                          task._id &&
+                                          window.confirm(
+                                            'Are you sure you want to delete this task?',
+                                          )
+                                        ) {
+                                          deleteTask(task._id);
+                                        }
+                                      }}
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </div>
                           </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import ChecklistItem from '@/models/ChecklistItem';
 import { emailService } from '@/lib/email-service';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { getServerSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
@@ -113,6 +113,102 @@ export async function GET(
   }
 }
 
+// Helper function to check user permissions
+function checkUserPermissions(
+  currentItem: { userId: Types.ObjectId; assignedToEmail?: string },
+  user: { id: Types.ObjectId; email: string },
+) {
+  const isCreator = currentItem.userId.toString() === user.id.toString();
+  const isAssignee = currentItem.assignedToEmail === user.email;
+
+  return { isCreator, isAssignee, hasPermission: isCreator || isAssignee };
+}
+
+// Helper function to filter updates for assignees
+function filterUpdatesForAssignee(
+  body: { completed?: boolean; notes?: string },
+  currentItem: { completed: boolean },
+) {
+  const allowedUpdates = {
+    completed: body.completed,
+    notes: body.notes,
+    completedAt:
+      body.completed && !currentItem.completed ? new Date() : undefined,
+  };
+
+  return {
+    completed: allowedUpdates.completed,
+    notes: allowedUpdates.notes,
+    completedAt: allowedUpdates.completedAt,
+  };
+}
+
+// Helper function to handle email notifications
+async function handleEmailNotifications(
+  isNewAssignment: boolean,
+  isBeingCompleted: boolean,
+  currentItem: { assignedBy?: string },
+  checklistItem: {
+    assignedToEmail?: string;
+    title: string;
+    description: string;
+    dueDate: Date;
+    priority: 'low' | 'medium' | 'high';
+    category: string;
+  },
+  user: { name?: string; email: string },
+  isAssignee: boolean,
+  id: string,
+) {
+  try {
+    // Send assignment email for new assignments
+    if (
+      isNewAssignment &&
+      emailService.isEmailServiceConfigured() &&
+      checklistItem.assignedToEmail
+    ) {
+      const emailSent = await emailService.sendTaskAssignmentEmail(
+        checklistItem.assignedToEmail,
+        {
+          taskTitle: checklistItem.title,
+          taskDescription: checklistItem.description,
+          dueDate: checklistItem.dueDate,
+          priority: checklistItem.priority,
+          category: checklistItem.category,
+          assignerName: user.name ?? user.email ?? 'Wedding Planner',
+          taskUrl: `${process.env.NEXTAUTH_URL}/checklist`,
+        },
+      );
+
+      if (emailSent) {
+        await ChecklistItem.findByIdAndUpdate(id, {
+          emailSent: true,
+          emailSentAt: new Date(),
+        });
+      }
+    }
+
+    // Send completion notification to assigner (if task was assigned and completed by assignee)
+    if (
+      isBeingCompleted &&
+      currentItem.assignedBy &&
+      isAssignee &&
+      emailService.isEmailServiceConfigured()
+    ) {
+      const assignerEmail = currentItem.assignedBy;
+
+      await emailService.sendTaskCompletionEmail(assignerEmail, {
+        taskTitle: checklistItem.title,
+        completedBy: user.name ?? user.email ?? 'Unknown',
+        completionDate: new Date(),
+      });
+    }
+  } catch (emailError) {
+    console.error('Failed to send email notification:', emailError);
+    // Don't fail the request if email fails
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -140,6 +236,27 @@ export async function PUT(
       );
     }
 
+    // Check if user has permission to update this task
+    const { isCreator, isAssignee, hasPermission } = checkUserPermissions(
+      currentItem,
+      user,
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'You do not have permission to update this task',
+        },
+        { status: 403 },
+      );
+    }
+
+    // If user is assignee but not creator, only allow completion and note updates
+    if (isAssignee && !isCreator) {
+      Object.assign(body, filterUpdatesForAssignee(body, currentItem));
+    }
+
     // Check if task is being marked as completed
     const wasCompleted = currentItem.completed;
     const isBeingCompleted = body.completed && !wasCompleted;
@@ -149,8 +266,9 @@ export async function PUT(
       body.completedAt = new Date();
     }
 
-    // Check if task is being assigned to a new person
+    // Check if task is being assigned to a new person (only creators can do this)
     const isNewAssignment =
+      isCreator &&
       body.assignedTo &&
       body.assignedToEmail &&
       (body.assignedTo !== currentItem.assignedTo ||
@@ -175,49 +293,15 @@ export async function PUT(
     }
 
     // Send email notifications
-    try {
-      // Send assignment email for new assignments
-      if (isNewAssignment && emailService.isEmailServiceConfigured()) {
-        const emailSent = await emailService.sendTaskAssignmentEmail(
-          checklistItem.assignedToEmail,
-          {
-            taskTitle: checklistItem.title,
-            taskDescription: checklistItem.description,
-            dueDate: checklistItem.dueDate,
-            priority: checklistItem.priority,
-            category: checklistItem.category,
-            assignerName: user.name ?? user.email ?? 'Wedding Planner',
-            taskUrl: `${process.env.NEXTAUTH_URL}/checklist`,
-          },
-        );
-
-        if (emailSent) {
-          await ChecklistItem.findByIdAndUpdate(id, {
-            emailSent: true,
-            emailSentAt: new Date(),
-          });
-        }
-      }
-
-      // Send completion notification to assigner
-      if (
-        isBeingCompleted &&
-        currentItem.assignedBy &&
-        emailService.isEmailServiceConfigured()
-      ) {
-        // Try to find assigner's email - in a real app you'd look this up from user database
-        const assignerEmail = user.email; // Simplified - should be the actual assigner's email
-
-        await emailService.sendTaskCompletionEmail(assignerEmail, {
-          taskTitle: checklistItem.title,
-          completedBy: user.name ?? user.email ?? 'Unknown',
-          completionDate: new Date(),
-        });
-      }
-    } catch (emailError) {
-      console.error('Failed to send email notification:', emailError);
-      // Don't fail the request if email fails
-    }
+    await handleEmailNotifications(
+      isNewAssignment,
+      isBeingCompleted,
+      currentItem,
+      checklistItem,
+      user,
+      isAssignee,
+      id,
+    );
 
     return NextResponse.json(
       { success: true, data: checklistItem },
