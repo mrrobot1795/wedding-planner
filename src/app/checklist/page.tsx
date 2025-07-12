@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import { useChecklist } from '@/lib/api';
 import { IChecklist } from '@/models/ChecklistItem';
 import { ChecklistTaskModal } from '@/components/modals';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
 
 // Define a local interface that modifies IChecklist to have _id as optional
@@ -43,6 +44,7 @@ const ChecklistPage = () => {
   const [currentTask, setCurrentTask] = useState<
     ChecklistItemWithId | undefined
   >(undefined);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
   // Helper function to determine if a task was assigned to the current user
   const isAssignedToMe = (task: ChecklistItemWithId) => {
@@ -67,6 +69,15 @@ const ChecklistPage = () => {
     } catch (error) {
       console.error('Error submitting task:', error);
       // You could set an error state here to show to the user
+    }
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    try {
+      await deleteTask(taskToDelete);
+    } finally {
+      setTaskToDelete(null);
     }
   };
   return (
@@ -363,16 +374,7 @@ const ChecklistPage = () => {
                                       <button
                                         className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
                                         aria-label="Delete task"
-                                        onClick={() => {
-                                          if (
-                                            task._id &&
-                                            window.confirm(
-                                              'Are you sure you want to delete this task?',
-                                            )
-                                          ) {
-                                            deleteTask(task._id);
-                                          }
-                                        }}
+                                        onClick={() => setTaskToDelete(task._id ?? null)}
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -523,16 +525,7 @@ const ChecklistPage = () => {
                               <button
                                 className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
                                 aria-label="Delete task"
-                                onClick={() => {
-                                  if (
-                                    task._id &&
-                                    window.confirm(
-                                      'Are you sure you want to delete this task?',
-                                    )
-                                  ) {
-                                    deleteTask(task._id);
-                                  }
-                                }}
+                                onClick={() => setTaskToDelete(task._id ?? null)}
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -711,16 +704,7 @@ const ChecklistPage = () => {
                                     <button
                                       className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
                                       aria-label="Delete task"
-                                      onClick={() => {
-                                        if (
-                                          task._id &&
-                                          window.confirm(
-                                            'Are you sure you want to delete this task?',
-                                          )
-                                        ) {
-                                          deleteTask(task._id);
-                                        }
-                                      }}
+                                      onClick={() => setTaskToDelete(task._id ?? null)}
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -754,6 +738,14 @@ const ChecklistPage = () => {
           onClose={() => setIsModalOpen(false)}
           task={currentTask}
           onSubmit={handleTaskSubmit}
+        />
+        <ConfirmationModal
+          isOpen={taskToDelete !== null}
+          onClose={() => setTaskToDelete(null)}
+          onConfirm={confirmDeleteTask}
+          title="Delete Task"
+          message="Are you sure you want to delete this task?"
+          confirmText="Delete"
         />
       </div>
     </Layout>
