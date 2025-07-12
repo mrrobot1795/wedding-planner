@@ -6,6 +6,7 @@ import { IVendor } from '@/models/Vendor';
 import { VendorModal } from '@/components/modals';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useVendors } from '@/lib/api';
+import Alert from '@/components/Alert';
 
 const VendorsPage = () => {
   const { vendors, isLoading, error, addVendor, updateVendor, deleteVendor } =
@@ -15,6 +16,7 @@ const VendorsPage = () => {
     undefined,
   );
   const [vendorToDelete, setVendorToDelete] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   // Define a type for vendors with MongoDB _id
   type VendorWithId = IVendor & {
     _id: string;
@@ -30,9 +32,12 @@ const VendorsPage = () => {
         await addVendor(vendorData);
       }
       setIsModalOpen(false);
+      setActionError(null);
     } catch (error) {
       console.error('Error submitting vendor:', error);
-      // You could set an error state here to show to the user
+      setActionError(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
     }
   };
 
@@ -248,7 +253,9 @@ const VendorsPage = () => {
               </button>
               <button
                 className="bg-teal-800 hover:bg-teal-700 text-teal-100 px-3 py-2 rounded-md text-sm transition-colors flex-1 flex items-center justify-center border border-teal-500"
-                onClick={() => setVendorToDelete(vendor._id?.toString() || null)}
+                onClick={() =>
+                  setVendorToDelete(vendor._id?.toString() || null)
+                }
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -274,6 +281,9 @@ const VendorsPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        {actionError && (
+          <Alert message={actionError} onClose={() => setActionError(null)} />
+        )}
         <div className="flex justify-between items-center p-5 bg-gradient-to-b from-teal-900 to-teal-700 rounded-xl shadow-sm mb-6 border border-teal-600">
           <h1 className="text-3xl font-bold text-white">Vendor Management</h1>
           <button
@@ -310,9 +320,19 @@ const VendorsPage = () => {
         <ConfirmationModal
           isOpen={vendorToDelete !== null}
           onClose={() => setVendorToDelete(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (vendorToDelete) {
-              deleteVendor(vendorToDelete);
+              try {
+                await deleteVendor(vendorToDelete);
+                setActionError(null);
+              } catch (err) {
+                console.error('Error deleting vendor:', err);
+                setActionError(
+                  err instanceof Error
+                    ? err.message
+                    : 'An unknown error occurred',
+                );
+              }
             }
           }}
           title="Delete Vendor"

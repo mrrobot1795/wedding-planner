@@ -7,6 +7,7 @@ import { useGuests } from '@/lib/api';
 import { GuestModal } from '@/components/modals';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { IGuest } from '@/models/Guest';
+import Alert from '@/components/Alert';
 
 // RSVP Status Badge component
 const RsvpBadge = ({ status }: { status: string }) => {
@@ -42,6 +43,7 @@ const GuestsPage = () => {
   );
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [guestToDelete, setGuestToDelete] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleGuestSubmit = async (guestData: Partial<IGuest>) => {
     try {
@@ -59,9 +61,12 @@ const GuestsPage = () => {
         logger.info('Guest added successfully');
       }
       setIsModalOpen(false);
+      setActionError(null);
     } catch (error) {
       console.error('Error handling guest submission:', error);
-      // You could set an error state here to show to the user
+      setActionError(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
     }
   };
   const handleDeleteGuest = (id?: string) => {
@@ -77,6 +82,9 @@ const GuestsPage = () => {
       logger.info('Guest deleted successfully');
     } catch (error) {
       console.error('Error deleting guest:', error);
+      setActionError(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
     } finally {
       setIsDeleting(null);
       setGuestToDelete(null);
@@ -321,6 +329,9 @@ const GuestsPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        {actionError && (
+          <Alert message={actionError} onClose={() => setActionError(null)} />
+        )}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">

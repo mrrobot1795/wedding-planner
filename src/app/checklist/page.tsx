@@ -7,6 +7,7 @@ import { IChecklist } from '@/models/ChecklistItem';
 import { ChecklistTaskModal } from '@/components/modals';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
+import Alert from '@/components/Alert';
 
 // Define a local interface that modifies IChecklist to have _id as optional
 export interface ChecklistItemWithId {
@@ -45,6 +46,7 @@ const ChecklistPage = () => {
     ChecklistItemWithId | undefined
   >(undefined);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Helper function to determine if a task was assigned to the current user
   const isAssignedToMe = (task: ChecklistItemWithId) => {
@@ -66,9 +68,12 @@ const ChecklistPage = () => {
         await addTask(taskData);
       }
       setIsModalOpen(false);
+      setActionError(null);
     } catch (error) {
       console.error('Error submitting task:', error);
-      // You could set an error state here to show to the user
+      setActionError(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
     }
   };
 
@@ -76,6 +81,12 @@ const ChecklistPage = () => {
     if (!taskToDelete) return;
     try {
       await deleteTask(taskToDelete);
+      setActionError(null);
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      setActionError(
+        err instanceof Error ? err.message : 'An unknown error occurred',
+      );
     } finally {
       setTaskToDelete(null);
     }
@@ -83,6 +94,9 @@ const ChecklistPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        {actionError && (
+          <Alert message={actionError} onClose={() => setActionError(null)} />
+        )}
         <div className="flex justify-between items-center p-5 bg-gradient-to-b from-teal-900 to-teal-700 rounded-xl shadow-sm mb-6 border border-teal-600">
           <div>
             <h1 className="text-3xl font-bold text-white">Wedding Checklist</h1>
@@ -329,12 +343,25 @@ const ChecklistPage = () => {
                                   <button
                                     className="bg-teal-600 hover:bg-teal-500 text-teal-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-teal-500"
                                     aria-label="Mark as complete"
-                                    onClick={() => {
+                                    onClick={async () => {
                                       if (task._id) {
-                                        updateTask(task._id, {
-                                          ...task,
-                                          completed: true,
-                                        });
+                                        try {
+                                          await updateTask(task._id, {
+                                            ...task,
+                                            completed: true,
+                                          });
+                                          setActionError(null);
+                                        } catch (err) {
+                                          console.error(
+                                            'Error updating task:',
+                                            err,
+                                          );
+                                          setActionError(
+                                            err instanceof Error
+                                              ? err.message
+                                              : 'An unknown error occurred',
+                                          );
+                                        }
                                       }
                                     }}
                                   >
@@ -374,7 +401,9 @@ const ChecklistPage = () => {
                                       <button
                                         className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
                                         aria-label="Delete task"
-                                        onClick={() => setTaskToDelete(task._id ?? null)}
+                                        onClick={() =>
+                                          setTaskToDelete(task._id ?? null)
+                                        }
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -525,7 +554,9 @@ const ChecklistPage = () => {
                               <button
                                 className="bg-red-700 hover:bg-red-600 text-red-100 p-1.5 rounded-full text-xs transition-all transform hover:scale-110 hover:shadow-sm border border-red-500"
                                 aria-label="Delete task"
-                                onClick={() => setTaskToDelete(task._id ?? null)}
+                                onClick={() =>
+                                  setTaskToDelete(task._id ?? null)
+                                }
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -704,7 +735,9 @@ const ChecklistPage = () => {
                                     <button
                                       className="bg-gray-300 hover:bg-gray-400 text-gray-600 p-1.5 rounded-full text-xs transition-all"
                                       aria-label="Delete task"
-                                      onClick={() => setTaskToDelete(task._id ?? null)}
+                                      onClick={() =>
+                                        setTaskToDelete(task._id ?? null)
+                                      }
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
