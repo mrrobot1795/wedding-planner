@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import { useBudget } from '@/lib/api';
 import { IBudgetItem } from '@/models/BudgetItem';
 import { BudgetItemModal } from '@/components/modals';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 const BudgetPage = () => {
   // Define a type for budget items with MongoDB _id
@@ -27,6 +28,7 @@ const BudgetPage = () => {
   const [currentBudgetItem, setCurrentBudgetItem] = useState<
     BudgetItemWithId | undefined
   >(undefined);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const handleBudgetItemSubmit = async (
     budgetItemData: Partial<IBudgetItem>,
   ) => {
@@ -133,15 +135,7 @@ const BudgetPage = () => {
                     </button>
                     <button
                       className="text-red-400 hover:text-red-300"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            'Are you sure you want to delete this budget item?',
-                          )
-                        ) {
-                          deleteBudgetItem(item._id);
-                        }
-                      }}
+                      onClick={() => setItemToDelete(item._id)}
                     >
                       Delete
                     </button>
@@ -214,6 +208,18 @@ const BudgetPage = () => {
           onClose={() => setIsModalOpen(false)}
           budgetItem={currentBudgetItem}
           onSubmit={handleBudgetItemSubmit}
+        />
+        <ConfirmationModal
+          isOpen={itemToDelete !== null}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={() => {
+            if (itemToDelete) {
+              deleteBudgetItem(itemToDelete);
+            }
+          }}
+          title="Delete Budget Item"
+          message="Are you sure you want to delete this budget item?"
+          confirmText="Delete"
         />
       </div>
     </Layout>

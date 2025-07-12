@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import Layout from '@/components/Layout';
 import { useGuests } from '@/lib/api';
 import { GuestModal } from '@/components/modals';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { IGuest } from '@/models/Guest';
 
 // RSVP Status Badge component
@@ -40,6 +41,7 @@ const GuestsPage = () => {
     undefined,
   );
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [guestToDelete, setGuestToDelete] = useState<string | null>(null);
 
   const handleGuestSubmit = async (guestData: Partial<IGuest>) => {
     try {
@@ -62,20 +64,22 @@ const GuestsPage = () => {
       // You could set an error state here to show to the user
     }
   };
-  const handleDeleteGuest = async (id?: string) => {
+  const handleDeleteGuest = (id?: string) => {
     if (!id) return;
+    setGuestToDelete(id);
+  };
 
-    if (window.confirm('Are you sure you want to delete this guest?')) {
-      try {
-        setIsDeleting(id);
-        await deleteGuest(id);
-        logger.info('Guest deleted successfully');
-      } catch (error) {
-        console.error('Error deleting guest:', error);
-        // You could set an error state here to show to the user
-      } finally {
-        setIsDeleting(null);
-      }
+  const confirmDeleteGuest = async () => {
+    if (!guestToDelete) return;
+    try {
+      setIsDeleting(guestToDelete);
+      await deleteGuest(guestToDelete);
+      logger.info('Guest deleted successfully');
+    } catch (error) {
+      console.error('Error deleting guest:', error);
+    } finally {
+      setIsDeleting(null);
+      setGuestToDelete(null);
     }
   };
 
@@ -357,6 +361,14 @@ const GuestsPage = () => {
           onClose={() => setIsModalOpen(false)}
           guest={currentGuest}
           onSubmit={handleGuestSubmit}
+        />
+        <ConfirmationModal
+          isOpen={guestToDelete !== null}
+          onClose={() => setGuestToDelete(null)}
+          onConfirm={confirmDeleteGuest}
+          title="Delete Guest"
+          message="Are you sure you want to delete this guest?"
+          confirmText="Delete"
         />
       </div>
     </Layout>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { IVendor } from '@/models/Vendor';
 import { VendorModal } from '@/components/modals';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { useVendors } from '@/lib/api';
 
 const VendorsPage = () => {
@@ -13,6 +14,7 @@ const VendorsPage = () => {
   const [currentVendor, setCurrentVendor] = useState<IVendor | undefined>(
     undefined,
   );
+  const [vendorToDelete, setVendorToDelete] = useState<string | null>(null);
   // Define a type for vendors with MongoDB _id
   type VendorWithId = IVendor & {
     _id: string;
@@ -246,15 +248,7 @@ const VendorsPage = () => {
               </button>
               <button
                 className="bg-teal-800 hover:bg-teal-700 text-teal-100 px-3 py-2 rounded-md text-sm transition-colors flex-1 flex items-center justify-center border border-teal-500"
-                onClick={() => {
-                  const vendorId = vendor._id?.toString();
-                  if (
-                    vendorId &&
-                    confirm('Are you sure you want to delete this vendor?')
-                  ) {
-                    deleteVendor(vendorId);
-                  }
-                }}
+                onClick={() => setVendorToDelete(vendor._id?.toString() || null)}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -312,6 +306,18 @@ const VendorsPage = () => {
           onClose={() => setIsModalOpen(false)}
           vendor={currentVendor}
           onSubmit={handleVendorSubmit}
+        />
+        <ConfirmationModal
+          isOpen={vendorToDelete !== null}
+          onClose={() => setVendorToDelete(null)}
+          onConfirm={() => {
+            if (vendorToDelete) {
+              deleteVendor(vendorToDelete);
+            }
+          }}
+          title="Delete Vendor"
+          message="Are you sure you want to delete this vendor?"
+          confirmText="Delete"
         />
       </div>
     </Layout>
