@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { logger } from '@/lib/logger';
 
 interface EmailConfig {
   host: string;
@@ -59,7 +60,7 @@ class EmailService {
             console.error('Email service configuration error:', error);
             this.isConfigured = false;
           } else {
-            console.log('Email service is ready to send messages');
+            logger.info('Email service is ready to send messages');
           }
         });
       } else {
@@ -89,7 +90,7 @@ class EmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent successfully:', info.messageId);
+      logger.info('Email sent successfully:', info.messageId);
       return true;
     } catch (error) {
       console.error('Failed to send email:', error);
