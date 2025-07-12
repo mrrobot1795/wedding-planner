@@ -6,6 +6,7 @@ import { useBudget } from '@/lib/api';
 import { IBudgetItem } from '@/models/BudgetItem';
 import { BudgetItemModal } from '@/components/modals';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import Alert from '@/components/Alert';
 
 const BudgetPage = () => {
   // Define a type for budget items with MongoDB _id
@@ -29,6 +30,7 @@ const BudgetPage = () => {
     BudgetItemWithId | undefined
   >(undefined);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const handleBudgetItemSubmit = async (
     budgetItemData: Partial<IBudgetItem>,
   ) => {
@@ -41,9 +43,12 @@ const BudgetPage = () => {
         await addBudgetItem(budgetItemData);
       }
       setIsModalOpen(false);
+      setActionError(null);
     } catch (error) {
       console.error('Error submitting budget item:', error);
-      // You could set an error state here to show to the user
+      setActionError(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
     }
   };
 
@@ -151,6 +156,9 @@ const BudgetPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        {actionError && (
+          <Alert message={actionError} onClose={() => setActionError(null)} />
+        )}
         <div className="flex justify-between items-center p-4 bg-gradient-to-b from-teal-900 to-teal-700 rounded-lg shadow-sm mb-6 border border-teal-600">
           <h1 className="text-3xl font-bold text-white">Budget Tracking</h1>
           <button
@@ -212,9 +220,19 @@ const BudgetPage = () => {
         <ConfirmationModal
           isOpen={itemToDelete !== null}
           onClose={() => setItemToDelete(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (itemToDelete) {
-              deleteBudgetItem(itemToDelete);
+              try {
+                await deleteBudgetItem(itemToDelete);
+                setActionError(null);
+              } catch (err) {
+                console.error('Error deleting budget item:', err);
+                setActionError(
+                  err instanceof Error
+                    ? err.message
+                    : 'An unknown error occurred',
+                );
+              }
             }
           }}
           title="Delete Budget Item"
