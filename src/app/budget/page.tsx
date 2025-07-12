@@ -73,7 +73,8 @@ const BudgetPage = () => {
   } else {
     content = (
       <div className="bg-gradient-to-b from-teal-900 to-teal-700 rounded-lg shadow overflow-hidden border border-teal-600">
-        <table className="min-w-full divide-y divide-teal-600">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-teal-600">
           <thead className="bg-teal-800">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-teal-100 uppercase tracking-wider">
@@ -150,6 +151,7 @@ const BudgetPage = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     );
   }
