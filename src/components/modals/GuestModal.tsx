@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '@/lib/logger';
 import Modal from '@/components/Modal';
 import { FormInput, FormButton } from '@/components/FormElements';
 import { IGuest } from '@/models/Guest';
@@ -40,7 +41,7 @@ const GuestForm: React.FC<GuestFormProps> = ({ guest, onSubmit, onCancel }) => {
     } else if (name === 'additionalGuests') {
       // Make sure additionalGuests is parsed as a number
       const numValue = parseInt(value, 10);
-      console.log(
+      logger.info(
         `Setting additionalGuests to: ${numValue}, original value: ${value}, type: ${typeof value}`,
       );
       setFormData({
@@ -70,12 +71,12 @@ const GuestForm: React.FC<GuestFormProps> = ({ guest, onSubmit, onCancel }) => {
         : additionalGuestsValue,
     };
 
-    console.log('Submitting guest with data:', submissionData);
-    console.log(
+    logger.info('Submitting guest with data:', submissionData);
+    logger.info(
       'additionalGuests type:',
       typeof submissionData.additionalGuests,
     );
-    console.log('additionalGuests value:', submissionData.additionalGuests);
+    logger.info('additionalGuests value:', submissionData.additionalGuests);
     onSubmit(submissionData);
   };
 

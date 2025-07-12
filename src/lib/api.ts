@@ -5,6 +5,7 @@ import { IGuest } from '@/models/Guest';
 import { IBudgetItem } from '@/models/BudgetItem';
 import { IVendor } from '@/models/Vendor';
 import { IChecklist } from '@/models/ChecklistItem';
+import { logger } from '@/lib/logger';
 
 // Guest API Service
 export const useGuests = () => {
@@ -26,7 +27,7 @@ export const useGuests = () => {
       }));
 
       setGuests(processedGuests);
-      console.log('Fetched guests:', processedGuests);
+      logger.info('Fetched guests:', processedGuests);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'An unknown error occurred',

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { logger } from '@/lib/logger';
 import Layout from '@/components/Layout';
 import { useGuests } from '@/lib/api';
 import { GuestModal } from '@/components/modals';
@@ -49,11 +50,11 @@ const GuestsPage = () => {
       ) {
         // Edit existing guest
         await updateGuest(currentGuest._id, guestData);
-        console.log('Guest updated successfully');
+        logger.info('Guest updated successfully');
       } else {
         // Add new guest
         await addGuest(guestData);
-        console.log('Guest added successfully');
+        logger.info('Guest added successfully');
       }
       setIsModalOpen(false);
     } catch (error) {
@@ -68,7 +69,7 @@ const GuestsPage = () => {
       try {
         setIsDeleting(id);
         await deleteGuest(id);
-        console.log('Guest deleted successfully');
+        logger.info('Guest deleted successfully');
       } catch (error) {
         console.error('Error deleting guest:', error);
         // You could set an error state here to show to the user

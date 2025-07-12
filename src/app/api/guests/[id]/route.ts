@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Guest from '@/models/Guest';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -43,8 +44,8 @@ export async function PUT(
       body.additionalGuests = Number(body.additionalGuests);
     }
 
-    console.log('Updating guest with ID:', id);
-    console.log('Update body:', body);
+    logger.info('Updating guest with ID:', id);
+    logger.info('Update body:', body);
 
     await connectDB();
 
