@@ -89,7 +89,6 @@ The wedding planner now includes automatic email notifications for task assignme
 
 2. **Test the email functionality**:
 
-   - Visit `/test-email` to send a test notification
    - Create a task with an assigned email to test assignment notifications
 
 3. **Email features include**:
