@@ -1,0 +1,9 @@
+pre-push:
+  commands:
+    test-only-on-main:
+      run: npm test
+      if_branch: main
+
+    lint-on-non-drafts:
+      run: npm run lint
+      unless_branch: draft
