@@ -1,4 +1,5 @@
 pre-push:
+    piped: true
     commands:
       lint:
         run: npm run lint
