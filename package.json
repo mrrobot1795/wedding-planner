@@ -9,7 +9,9 @@
     "start": "next start",
     "start:standalone": "node standalone-start.js",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "lefthook": "^1.12.2",
     "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5"

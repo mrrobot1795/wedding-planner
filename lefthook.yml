@@ -1,9 +1,11 @@
 pre-push:
+  piped: true
   commands:
-    test-only-on-main:
-      run: npm test
-      if_branch: main
-
-    lint-on-non-drafts:
+    lint:
       run: npm run lint
-      unless_branch: draft
+      skip: 
+        - ref: "*draft*"
+    format_check:
+      run: npm run format:check
+      skip: 
+        - ref: "*draft*"
