@@ -9,7 +9,9 @@
     "start": "next start",
     "start:standalone": "node standalone-start.js",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",

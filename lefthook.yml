@@ -1,10 +1,10 @@
-pre-commit:
-  commands:
-    lint:
-      run: npm run lint
-      skip:
-        - ref: "*draft*"
-    format_check:
-      run: npm run format:check
-      skip:
-        - ref: "*draft*"
+pre-push:
+    commands:
+      lint:
+        run: npm run lint
+        skip:
+          - ref: "*draft*"
+      format_check:
+        run: npm run format:check
+        skip:
+          - ref: "*draft*"
